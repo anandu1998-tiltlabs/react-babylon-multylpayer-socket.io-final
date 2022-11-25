@@ -8,8 +8,8 @@ import socketIO from "socket.io-client";
 window.CANNON = cannon;
 
 const myStyle = {
-	width: "100%",
-	height: "100%",
+	width: "95%",
+	height: "95%",
 };
 
 const ReactCanvas = (props) => {
@@ -46,7 +46,7 @@ const ReactCanvas = (props) => {
 				GameData.name = locName;
 				GameData.room = locRoom;
 				socket.emit("ThankYou", GameData);
-				localStorage.clear();
+				// localStorage.clear();
 			});
 
 			socket.on("Start", function (Game) {
@@ -332,15 +332,25 @@ const ReactCanvas = (props) => {
 			//   plane
 			// );
 			var advancedTexture = GUI.AdvancedDynamicTexture.CreateForMesh(plane);
-			var button1 = GUI.Button.CreateSimpleButton("but1", data.Game.name);
-			button1.width = 10;
-			button1.height = 1;
-			button1.color = "white";
-			button1.fontSize = 200;
-			button1.background = "green";
-			advancedTexture.addControl(button1);
-			// --------------------- GUI BUTTON BOX -------------------------------'
+			var textblock = new GUI.TextBlock();
+			textblock.text = data.Game.name;
+			textblock.fontSize = 300;
+			textblock.color = "white";
+			advancedTexture.addControl(textblock);
+			// --------------------- GUI BUTTON BOX -------------------------------
 		} else {
+			// --------------------- GUI BUTTON BOX -------------------------------
+			var advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+			var textblock = new GUI.TextBlock();
+			textblock.height = "20px";
+			textblock.text = Game.name;
+			textblock.fontSize = 20;
+			textblock.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+			textblock.color = "white";
+			advancedTexture.addControl(textblock);
+			// --------------------- GUI BUTTON BOX -------------------------------
+
 			// camera.target = hero;
 			// camera.lockedTarget = hero;
 			socket.emit("IWasCreated", GameData, hero.state);
@@ -390,6 +400,7 @@ const ReactCanvas = (props) => {
 				notifyServer = true;
 				hero.state.notifyServer = true;
 			}
+		
 
 			if (notifyServer) {
 				hero.state.x = hero.position.x;
@@ -401,6 +412,11 @@ const ReactCanvas = (props) => {
 				hero.state.isWPressed = isWPressed;
 				hero.state.isBPressed = isBPressed;
 			} else {
+				hero.state.isSPressed = false;
+				hero.state.isAPressed = false;
+				hero.state.isDPressed = false;
+				hero.state.isWPressed = false;
+				hero.state.isBPressed = false;
 				idleAnim.start(true, 1.0, idleAnim.from, idleAnim.to, false);
 				//Stop all animations besides Idle Anim when no key is down
 				sambaAnim.stop();
