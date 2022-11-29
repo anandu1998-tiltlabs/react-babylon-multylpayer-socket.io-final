@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import socketIO from "socket.io-client";
-const IO = socketIO.connect("http://localhost:4000");
+const IO = socketIO.connect("http://10.106.0.21:4000");
 
 const LandingPage = (props) => {
 	const history = useHistory();
@@ -18,7 +18,7 @@ const LandingPage = (props) => {
 	};
 
 	const handleApi = () => {
-		fetch("http://localhost:4000/")
+		fetch("http://10.106.0.21:4000/")
 			.then((response) => response.json())
 			.then((data) => setRooms(Object.keys(data.rooms)));
 	};
