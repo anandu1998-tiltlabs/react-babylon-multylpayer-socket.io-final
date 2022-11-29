@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import socketIO from "socket.io-client";
-const IO = socketIO.connect("http://10.106.0.21:4000");
+const { REACT_APP_SERVER_DOMAIN } = process.env;
+const IO = socketIO.connect(REACT_APP_SERVER_DOMAIN);
+// const IO = socketIO.connect("https://5728-103-142-30-141.in.ngrok.io",{  extraHeaders: {
+// "ngrok-skip-browser-warning":"any"
+// }});
 
 const LandingPage = (props) => {
 	const history = useHistory();
@@ -18,7 +22,12 @@ const LandingPage = (props) => {
 	};
 
 	const handleApi = () => {
-		fetch("http://10.106.0.21:4000/")
+		// fetch("https://5728-103-142-30-141.in.ngrok.io",{
+		// 	headers: {
+		// 		"ngrok-skip-browser-warning":"any"
+		// 	 },
+		// })
+		fetch(REACT_APP_SERVER_DOMAIN)
 			.then((response) => response.json())
 			.then((data) => setRooms(Object.keys(data.rooms)));
 	};

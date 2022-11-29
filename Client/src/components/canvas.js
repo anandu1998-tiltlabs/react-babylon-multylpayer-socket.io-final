@@ -4,6 +4,7 @@ import "babylonjs-loaders";
 import * as GUI from "babylonjs-gui";
 import * as cannon from "cannon";
 import socketIO from "socket.io-client";
+const { REACT_APP_SERVER_DOMAIN } = process.env;
 
 window.CANNON = cannon;
 
@@ -25,7 +26,11 @@ const ReactCanvas = (props) => {
 	let isDPressed = false;
 	let isBPressed = false;
 
-	const socket = socketIO.connect("http://10.106.0.21:4000");
+	// const socket = socketIO.connect("https://5728-103-142-30-141.in.ngrok.io",{  extraHeaders: {
+	// 	"ngrok-skip-browser-warning":"any"
+	//   }});
+
+	const socket = socketIO.connect(REACT_APP_SERVER_DOMAIN);
 	const locRoom = localStorage.getItem("room");
 	const locName = localStorage.getItem("name");
 
@@ -155,7 +160,7 @@ const ReactCanvas = (props) => {
 	}
 
 	async function ListRoomGUI(scene) {
-		const data = await fetch("http://10.106.0.21:4000")
+		const data = await fetch(REACT_APP_SERVER_DOMAIN)
 			.then((response) => response.json())
 			.then((data) => {
 				var advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
@@ -257,7 +262,7 @@ const ReactCanvas = (props) => {
 		const tree = await BABYLON.SceneLoader.ImportMesh("", "/assets/", "urban_tree.glb", scene, (meshes) => {
 			// meshes[0].position.x = -150;
 			meshes[0].position.y = -1.5;
-			meshes[0].position.x = 5 ;
+			meshes[0].position.x = 5;
 			// meshes[0].position.z = 10;
 			meshes.forEach((i) => {
 				i.checkCollisions = true;
@@ -426,7 +431,6 @@ const ReactCanvas = (props) => {
 				notifyServer = true;
 				hero.state.notifyServer = true;
 			}
-		
 
 			if (notifyServer) {
 				hero.state.x = hero.position.x;
@@ -480,24 +484,21 @@ const ReactCanvas = (props) => {
 		// 	if (hit.pickedMesh) {
 		// 		let mesh =hit.pickedMesh
 		// 		// console.log("aaaaaaaaaaaa",mesh.id);
-			
+
 		// 		let array =['ground','my_flore']
 
 		// 		//  array.find(element => {console.log("2222222222222",element)});
 		// 		if(!array.includes(mesh.id)){
-		// 			// mesh.setEnabled( false); 
-		// 			mesh.setEnabled((mesh.isEnabled() ? false : true)); 
+		// 			// mesh.setEnabled( false);
+		// 			mesh.setEnabled((mesh.isEnabled() ? false : true));
 		// 		}
-				
+
 		// 	}
 		// }
 
 		// scene.registerBeforeRender(function() {
 		// 	castRay();
 		// });
-
-
-
 
 		return hero;
 	}
