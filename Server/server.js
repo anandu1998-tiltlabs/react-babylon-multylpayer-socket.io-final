@@ -5,7 +5,7 @@ const http = require("http").Server(app);
 const PORT = 4000;
 const socketIO = require("socket.io")(http, {
 	cors: {
-		origin: "http://localhost:3000",
+		origin: "*",
 	},
 });
 
@@ -82,7 +82,7 @@ socketIO.on("connection", (socket) => {
 	});
 });
 
-http.listen(PORT, () => {
+http.listen(PORT,'0.0.0.0', () => {
 	console.log(`Server listening on ${PORT}`);
 });
 

@@ -3,6 +3,7 @@ import socketIO from "socket.io-client";
 import Scene from "./components/canvas";
 import LandingPage from "./components/landing-page";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
+console.log("aaaaaaaaaaa",process.env.SERVER_DOMAIN);
 
 function App() {
 	const [room, setRoom] = useState("");
@@ -10,13 +11,13 @@ function App() {
 	const [roomOne, setRoomOne] = useState([]);
 
 	const handleApi = () => {
-		fetch("http://localhost:4000/")
+		fetch("http://10.106.0.21:4000/")
 			.then((response) => response.json())
 			.then((data) => setRoomOne(Object.keys(data.rooms)));
 	};
 
 	useEffect(() => {
-		const socket = socketIO.connect("http://localhost:4000");
+		const socket = socketIO.connect("http://10.106.0.21:4000",{transports: ['websocket']});
 		setSocket(socket);
 		handleApi();
 	}, []);

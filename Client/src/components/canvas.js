@@ -8,8 +8,8 @@ import socketIO from "socket.io-client";
 window.CANNON = cannon;
 
 const myStyle = {
-	width: "100%",
-	height: "100%",
+	width: "95%",
+	height: "95%",
 };
 
 const ReactCanvas = (props) => {
@@ -25,7 +25,7 @@ const ReactCanvas = (props) => {
 	let isDPressed = false;
 	let isBPressed = false;
 
-	const socket = socketIO.connect("http://localhost:4000");
+	const socket = socketIO.connect("http://10.106.0.21:4000");
 	const locRoom = localStorage.getItem("room");
 	const locName = localStorage.getItem("name");
 
@@ -46,7 +46,7 @@ const ReactCanvas = (props) => {
 				GameData.name = locName;
 				GameData.room = locRoom;
 				socket.emit("ThankYou", GameData);
-				localStorage.clear();
+				// localStorage.clear();
 			});
 
 			socket.on("Start", function (Game) {
@@ -128,6 +128,8 @@ const ReactCanvas = (props) => {
 		// let land2 = await CreateLand2(scene);
 		let fence = await CreateFence(scene);
 
+		let tree = await CreateTree(scene);
+
 		let girl = await createGirl(scene, Game);
 		let followCamera = createFollowCameralock(scene, girl);
 		return scene;
@@ -153,7 +155,7 @@ const ReactCanvas = (props) => {
 	}
 
 	async function ListRoomGUI(scene) {
-		const data = await fetch("http://localhost:4000")
+		const data = await fetch("http://10.106.0.21:4000")
 			.then((response) => response.json())
 			.then((data) => {
 				var advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
@@ -187,7 +189,7 @@ const ReactCanvas = (props) => {
 		return camera;
 	}
 	async function CreateLand1(scene) {
-		const land1 = await BABYLON.SceneLoader.ImportMesh("", "http://localhost:3000/assets/", "Land1.glb", scene, (meshes) => {
+		const land1 = await BABYLON.SceneLoader.ImportMesh("", "http://10.106.0.21:3000/assets/", "Land1.glb", scene, (meshes) => {
 			let first = scene.getMeshByName("__root__");
 			let second = scene.getMeshByName("my_flore");
 			meshes[0].position.y = -2.5;
@@ -198,7 +200,7 @@ const ReactCanvas = (props) => {
 	}
 
 	async function CreateLand2(scene) {
-		const land2 = await BABYLON.SceneLoader.ImportMesh("", "http://localhost:3000/assets/", "Land2.glb", scene, (meshes) => {
+		const land2 = await BABYLON.SceneLoader.ImportMesh("", "http://10.106.0.21:3000/assets/", "Land2.glb", scene, (meshes) => {
 			// meshes[0].position.x = -150;
 			meshes[0].position.y = -3;
 			meshes[0].position.x = 160;
@@ -212,7 +214,7 @@ const ReactCanvas = (props) => {
 	}
 
 	function CreateGround(scene) {
-		let ground = new BABYLON.Mesh.CreateGroundFromHeightMap("ground", "http://localhost:3000/assets/hmap1.png", 57, 62, 20, 0, 10, scene, false, OnGroundCreated);
+		let ground = new BABYLON.Mesh.CreateGroundFromHeightMap("ground", "http://10.106.0.21:3000/assets/hmap1.png", 57, 62, 20, 0, 10, scene, false, OnGroundCreated);
 		ground.position.y = -3.5;
 		ground.position.x = -3.5;
 		ground.position.z = 3.5;
@@ -220,7 +222,7 @@ const ReactCanvas = (props) => {
 		function OnGroundCreated() {
 			let groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
 			groundMaterial.alpha = 0; // to invisible mesh
-			groundMaterial.ambientTexture = new BABYLON.Texture("http://localhost:3000/assets/grass.png", scene);
+			groundMaterial.ambientTexture = new BABYLON.Texture("http://10.106.0.21:3000/assets/grass.png", scene);
 			ground.material = groundMaterial;
 			ground.checkCollisions = true;
 		}
@@ -228,7 +230,7 @@ const ReactCanvas = (props) => {
 	}
 
 	async function CreateFence(scene) {
-		const fence = new BABYLON.SceneLoader.ImportMesh("", "http://localhost:3000/assets/", "Fence.obj", scene, (meshes) => {
+		const fence = new BABYLON.SceneLoader.ImportMesh("", "http://10.106.0.21:3000/assets/", "Fence.obj", scene, (meshes) => {
 			meshes.forEach((i) => {
 				i.position.y = -1;
 				i.checkCollisions = true;
@@ -239,6 +241,30 @@ const ReactCanvas = (props) => {
 		return fence;
 	}
 
+	async function CreateTree(scene) {
+		// const tree = new BABYLON.SceneLoader.ImportMesh("", "http://10.106.0.21:3000/assets/", "urban_tree.glb", scene, (meshes) => {
+		// 	console.log("ssssssssssssssssss", meshes);
+		// 	meshes.forEach((i) => {
+		// 		i.position.y = -1.5;
+		// 		i.position.x = -4;
+		// 		i.checkCollisions = true;
+		// 		// i.scaling.scaleInPlace(0.06);
+		// 		// i.position.z = -10;
+		// 	});
+		// });
+		// return tree;
+
+		const tree = await BABYLON.SceneLoader.ImportMesh("", "http://10.106.0.21:3000/assets/", "urban_tree.glb", scene, (meshes) => {
+			// meshes[0].position.x = -150;
+			meshes[0].position.y = -1.5;
+			meshes[0].position.x = 5 ;
+			// meshes[0].position.z = 10;
+			meshes.forEach((i) => {
+				i.checkCollisions = true;
+			});
+		});
+		return tree;
+	}
 	async function createLights(scene) {
 		let light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 		light.intensity = 0.7;
@@ -282,7 +308,7 @@ const ReactCanvas = (props) => {
 
 		scene.enablePhysics(new BABYLON.Vector3(0, 0, 0), new BABYLON.CannonJSPlugin());
 
-		let girl = await BABYLON.SceneLoader.ImportMeshAsync("", "http://localhost:3000/assets/", "HVGirl.glb", scene);
+		let girl = await BABYLON.SceneLoader.ImportMeshAsync("", "http://10.106.0.21:3000/assets/", "HVGirl.glb", scene);
 		girl.meshes.map((element) => {
 			element.checkCollisions = true;
 		});
@@ -332,15 +358,25 @@ const ReactCanvas = (props) => {
 			//   plane
 			// );
 			var advancedTexture = GUI.AdvancedDynamicTexture.CreateForMesh(plane);
-			var button1 = GUI.Button.CreateSimpleButton("but1", data.Game.name);
-			button1.width = 10;
-			button1.height = 1;
-			button1.color = "white";
-			button1.fontSize = 200;
-			button1.background = "green";
-			advancedTexture.addControl(button1);
-			// --------------------- GUI BUTTON BOX -------------------------------'
+			var textblock = new GUI.TextBlock();
+			textblock.text = data.Game.name;
+			textblock.fontSize = 300;
+			textblock.color = "white";
+			advancedTexture.addControl(textblock);
+			// --------------------- GUI BUTTON BOX -------------------------------
 		} else {
+			// --------------------- GUI BUTTON BOX -------------------------------
+			var advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+			var textblock = new GUI.TextBlock();
+			textblock.height = "20px";
+			textblock.text = Game.name;
+			textblock.fontSize = 20;
+			textblock.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+			textblock.color = "white";
+			advancedTexture.addControl(textblock);
+			// --------------------- GUI BUTTON BOX -------------------------------
+
 			// camera.target = hero;
 			// camera.lockedTarget = hero;
 			socket.emit("IWasCreated", GameData, hero.state);
@@ -390,6 +426,7 @@ const ReactCanvas = (props) => {
 				notifyServer = true;
 				hero.state.notifyServer = true;
 			}
+		
 
 			if (notifyServer) {
 				hero.state.x = hero.position.x;
@@ -401,6 +438,11 @@ const ReactCanvas = (props) => {
 				hero.state.isWPressed = isWPressed;
 				hero.state.isBPressed = isBPressed;
 			} else {
+				hero.state.isSPressed = false;
+				hero.state.isAPressed = false;
+				hero.state.isDPressed = false;
+				hero.state.isWPressed = false;
+				hero.state.isBPressed = false;
 				idleAnim.start(true, 1.0, idleAnim.from, idleAnim.to, false);
 				//Stop all animations besides Idle Anim when no key is down
 				sambaAnim.stop();
@@ -410,6 +452,52 @@ const ReactCanvas = (props) => {
 			}
 			socket.emit("IMoved", Game, hero.state);
 		};
+
+		function vecToLocal(vector, mesh) {
+			var m = mesh.getWorldMatrix();
+			var v = BABYLON.Vector3.TransformCoordinates(vector, m);
+			return v;
+		}
+
+		function castRay() {
+			var origin = hero.position;
+
+			var forward = new BABYLON.Vector3(0, 0, 1);
+			forward = vecToLocal(forward, hero);
+
+			var direction = forward.subtract(origin);
+			direction = BABYLON.Vector3.Normalize(direction);
+
+			var length = 15;
+
+			var ray = new BABYLON.Ray(origin, direction, length);
+
+			// let rayHelper = new BABYLON.RayHelper(ray);
+			// rayHelper.show(scene);
+
+			var hit = scene.pickWithRay(ray);
+
+			if (hit.pickedMesh) {
+				let mesh =hit.pickedMesh
+				// console.log("aaaaaaaaaaaa",mesh.id);
+			
+				let array =['ground','my_flore']
+
+				//  array.find(element => {console.log("2222222222222",element)});
+				if(!array.includes(mesh.id)){
+					// mesh.setEnabled( false); 
+					mesh.setEnabled((mesh.isEnabled() ? false : true)); 
+				}
+				
+			}
+		}
+
+		scene.registerBeforeRender(function() {
+			castRay();
+		});
+
+
+
 
 		return hero;
 	}
