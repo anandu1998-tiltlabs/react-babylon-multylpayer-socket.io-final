@@ -2,7 +2,11 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const http = require("http").Server(app);
-const PORT = 4000;
+const dotenv = require('dotenv');
+const path = require('path');
+dotenv.config({ path: path.join(__dirname, './.env') });
+
+const PORT = process.env.PORT?process.env.PORT:4000;
 const socketIO = require("socket.io")(http, {
 	cors: {
 		origin: "*",
@@ -81,7 +85,6 @@ socketIO.on("connection", (socket) => {
 		}
 	});
 });
-
 http.listen(PORT,'0.0.0.0', () => {
 	console.log(`Server listening on ${PORT}`);
 });

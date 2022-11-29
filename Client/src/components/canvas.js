@@ -189,7 +189,7 @@ const ReactCanvas = (props) => {
 		return camera;
 	}
 	async function CreateLand1(scene) {
-		const land1 = await BABYLON.SceneLoader.ImportMesh("", "http://10.106.0.21:3000/assets/", "Land1.glb", scene, (meshes) => {
+		const land1 = await BABYLON.SceneLoader.ImportMesh("", "/assets/", "Land1.glb", scene, (meshes) => {
 			let first = scene.getMeshByName("__root__");
 			let second = scene.getMeshByName("my_flore");
 			meshes[0].position.y = -2.5;
@@ -200,7 +200,7 @@ const ReactCanvas = (props) => {
 	}
 
 	async function CreateLand2(scene) {
-		const land2 = await BABYLON.SceneLoader.ImportMesh("", "http://10.106.0.21:3000/assets/", "Land2.glb", scene, (meshes) => {
+		const land2 = await BABYLON.SceneLoader.ImportMesh("", "/assets/", "Land2.glb", scene, (meshes) => {
 			// meshes[0].position.x = -150;
 			meshes[0].position.y = -3;
 			meshes[0].position.x = 160;
@@ -214,7 +214,7 @@ const ReactCanvas = (props) => {
 	}
 
 	function CreateGround(scene) {
-		let ground = new BABYLON.Mesh.CreateGroundFromHeightMap("ground", "http://10.106.0.21:3000/assets/hmap1.png", 57, 62, 20, 0, 10, scene, false, OnGroundCreated);
+		let ground = new BABYLON.Mesh.CreateGroundFromHeightMap("ground", "/assets/hmap1.png", 57, 62, 20, 0, 10, scene, false, OnGroundCreated);
 		ground.position.y = -3.5;
 		ground.position.x = -3.5;
 		ground.position.z = 3.5;
@@ -222,7 +222,7 @@ const ReactCanvas = (props) => {
 		function OnGroundCreated() {
 			let groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
 			groundMaterial.alpha = 0; // to invisible mesh
-			groundMaterial.ambientTexture = new BABYLON.Texture("http://10.106.0.21:3000/assets/grass.png", scene);
+			groundMaterial.ambientTexture = new BABYLON.Texture("/assets/grass.png", scene);
 			ground.material = groundMaterial;
 			ground.checkCollisions = true;
 		}
@@ -230,7 +230,7 @@ const ReactCanvas = (props) => {
 	}
 
 	async function CreateFence(scene) {
-		const fence = new BABYLON.SceneLoader.ImportMesh("", "http://10.106.0.21:3000/assets/", "Fence.obj", scene, (meshes) => {
+		const fence = new BABYLON.SceneLoader.ImportMesh("", "/assets/", "Fence.obj", scene, (meshes) => {
 			meshes.forEach((i) => {
 				i.position.y = -1;
 				i.checkCollisions = true;
@@ -242,7 +242,7 @@ const ReactCanvas = (props) => {
 	}
 
 	async function CreateTree(scene) {
-		// const tree = new BABYLON.SceneLoader.ImportMesh("", "http://10.106.0.21:3000/assets/", "urban_tree.glb", scene, (meshes) => {
+		// const tree = new BABYLON.SceneLoader.ImportMesh("", "/assets/", "urban_tree.glb", scene, (meshes) => {
 		// 	console.log("ssssssssssssssssss", meshes);
 		// 	meshes.forEach((i) => {
 		// 		i.position.y = -1.5;
@@ -254,7 +254,7 @@ const ReactCanvas = (props) => {
 		// });
 		// return tree;
 
-		const tree = await BABYLON.SceneLoader.ImportMesh("", "http://10.106.0.21:3000/assets/", "urban_tree.glb", scene, (meshes) => {
+		const tree = await BABYLON.SceneLoader.ImportMesh("", "/assets/", "urban_tree.glb", scene, (meshes) => {
 			// meshes[0].position.x = -150;
 			meshes[0].position.y = -1.5;
 			meshes[0].position.x = 5 ;
@@ -308,7 +308,7 @@ const ReactCanvas = (props) => {
 
 		scene.enablePhysics(new BABYLON.Vector3(0, 0, 0), new BABYLON.CannonJSPlugin());
 
-		let girl = await BABYLON.SceneLoader.ImportMeshAsync("", "http://10.106.0.21:3000/assets/", "HVGirl.glb", scene);
+		let girl = await BABYLON.SceneLoader.ImportMeshAsync("", "/assets/", "HVGirl.glb", scene);
 		girl.meshes.map((element) => {
 			element.checkCollisions = true;
 		});
@@ -453,48 +453,48 @@ const ReactCanvas = (props) => {
 			socket.emit("IMoved", Game, hero.state);
 		};
 
-		function vecToLocal(vector, mesh) {
-			var m = mesh.getWorldMatrix();
-			var v = BABYLON.Vector3.TransformCoordinates(vector, m);
-			return v;
-		}
+		// function vecToLocal(vector, mesh) {
+		// 	var m = mesh.getWorldMatrix();
+		// 	var v = BABYLON.Vector3.TransformCoordinates(vector, m);
+		// 	return v;
+		// }
 
-		function castRay() {
-			var origin = hero.position;
+		// function castRay() {
+		// 	var origin = hero.position;
 
-			var forward = new BABYLON.Vector3(0, 0, 1);
-			forward = vecToLocal(forward, hero);
+		// 	var forward = new BABYLON.Vector3(0, 0, 1);
+		// 	forward = vecToLocal(forward, hero);
 
-			var direction = forward.subtract(origin);
-			direction = BABYLON.Vector3.Normalize(direction);
+		// 	var direction = forward.subtract(origin);
+		// 	direction = BABYLON.Vector3.Normalize(direction);
 
-			var length = 15;
+		// 	var length = 15;
 
-			var ray = new BABYLON.Ray(origin, direction, length);
+		// 	var ray = new BABYLON.Ray(origin, direction, length);
 
-			// let rayHelper = new BABYLON.RayHelper(ray);
-			// rayHelper.show(scene);
+		// 	// let rayHelper = new BABYLON.RayHelper(ray);
+		// 	// rayHelper.show(scene);
 
-			var hit = scene.pickWithRay(ray);
+		// 	var hit = scene.pickWithRay(ray);
 
-			if (hit.pickedMesh) {
-				let mesh =hit.pickedMesh
-				// console.log("aaaaaaaaaaaa",mesh.id);
+		// 	if (hit.pickedMesh) {
+		// 		let mesh =hit.pickedMesh
+		// 		// console.log("aaaaaaaaaaaa",mesh.id);
 			
-				let array =['ground','my_flore']
+		// 		let array =['ground','my_flore']
 
-				//  array.find(element => {console.log("2222222222222",element)});
-				if(!array.includes(mesh.id)){
-					// mesh.setEnabled( false); 
-					mesh.setEnabled((mesh.isEnabled() ? false : true)); 
-				}
+		// 		//  array.find(element => {console.log("2222222222222",element)});
+		// 		if(!array.includes(mesh.id)){
+		// 			// mesh.setEnabled( false); 
+		// 			mesh.setEnabled((mesh.isEnabled() ? false : true)); 
+		// 		}
 				
-			}
-		}
+		// 	}
+		// }
 
-		scene.registerBeforeRender(function() {
-			castRay();
-		});
+		// scene.registerBeforeRender(function() {
+		// 	castRay();
+		// });
 
 
 
