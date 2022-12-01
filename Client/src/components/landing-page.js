@@ -3,7 +3,7 @@ import { useHistory } from "react-router-dom";
 import socketIO from "socket.io-client";
 const { REACT_APP_SERVER_DOMAIN } = process.env;
 const IO = socketIO.connect(REACT_APP_SERVER_DOMAIN);
-// const IO = socketIO.connect("https://5728-103-142-30-141.in.ngrok.io",{  extraHeaders: {
+// const IO = socketIO.connect(REACT_APP_SERVER_DOMAIN,{  extraHeaders: {
 // "ngrok-skip-browser-warning":"any"
 // }});
 
@@ -22,7 +22,7 @@ const LandingPage = (props) => {
 	};
 
 	const handleApi = () => {
-		// fetch("https://5728-103-142-30-141.in.ngrok.io",{
+		// fetch(REACT_APP_SERVER_DOMAIN,{
 		// 	headers: {
 		// 		"ngrok-skip-browser-warning":"any"
 		// 	 },
@@ -100,8 +100,8 @@ const LandingPage = (props) => {
 				)}
 
 				{rooms.map((room, index) => (
-					<form>
-						<div key={index}>
+					<form key={index}>
+						<div >
 							<button className="button" type="submit" onClick={() => handleName(room, name)}>
 								{" "}
 								{room}

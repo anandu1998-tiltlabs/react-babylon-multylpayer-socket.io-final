@@ -26,7 +26,7 @@ const ReactCanvas = (props) => {
 	let isDPressed = false;
 	let isBPressed = false;
 
-	// const socket = socketIO.connect("https://5728-103-142-30-141.in.ngrok.io",{  extraHeaders: {
+	// const socket = socketIO.connect(REACT_APP_SERVER_DOMAIN,{  extraHeaders: {
 	// 	"ngrok-skip-browser-warning":"any"
 	//   }});
 
@@ -65,32 +65,32 @@ const ReactCanvas = (props) => {
 			socket.on("AnotherTankMoved", function (data) {
 				// console.log("aaaaaaaaaaaa",data);
 				let girl = enemies[data.id];
-				let hero = girl.meshes[0];
-				hero.setState(data);
-				const idleAnim = girl.animationGroups[0];
-				const sambaAnim = girl.animationGroups[1];
-				const walkAnim = girl.animationGroups[2];
-				const walkBackAnim = girl.animationGroups[3];
+				let hero = girl?.meshes[0];
+				hero?.setState(data);
+				const idleAnim = girl?.animationGroups[0];
+				const sambaAnim = girl?.animationGroups[1];
+				const walkAnim = girl?.animationGroups[2];
+				const walkBackAnim = girl?.animationGroups[3];
 
 				//Manage animations to be played
 				if (data.notifyServer) {
 					if (data.isSPressed) {
-						walkBackAnim.start(true, 1.0, walkBackAnim.from, walkBackAnim.to, false);
+						walkBackAnim?.start(true, 1.0, walkBackAnim.from, walkBackAnim.to, false);
 					}
 					if (data.isWPressed) {
-						walkAnim.start(true, 1.0, walkAnim.from, walkAnim.to, false);
+						walkAnim?.start(true, 1.0, walkAnim.from, walkAnim.to, false);
 					}
 					if (data.isBPressed) {
-						sambaAnim.start(true, 1.0, sambaAnim.from, sambaAnim.to, false);
+						sambaAnim?.start(true, 1.0, sambaAnim.from, sambaAnim.to, false);
 					}
 				} else {
 					//Default animation is idle when no key is down
-					idleAnim.start(true, 1.0, idleAnim.from, idleAnim.to, false);
+					idleAnim?.start(true, 1.0, idleAnim.from, idleAnim.to, false);
 
 					//Stop all animations besides Idle Anim when no key is down
-					sambaAnim.stop();
-					walkAnim.stop();
-					walkBackAnim.stop();
+					sambaAnim?.stop();
+					walkAnim?.stop();
+					walkBackAnim?.stop();
 				}
 			});
 
@@ -110,34 +110,51 @@ const ReactCanvas = (props) => {
 	async function startGame(Game) {
 		canvas = canvasRef.current;
 		engine = new BABYLON.Engine(canvas, true);
-		scene = await createScene(Game);
+		scene = new BABYLON.Scene(engine);
+		let girl =  createScene(Game);
+		let new_girl = await girl
 		// modifySettings();
 		let hero = scene.getMeshByName("__root__");
-		let toRender = function () {
+		console.log("girl[0]", girl);
+		console.log("hero ", hero)
+		console.log("hero position ", hero._absolutePosition)
+		console.log("meshs", scene.meshes, scene.meshes.length)
+		scene.meshes.forEach(mesh => {
+			console.log("mesh name", mesh)
+			// console.log("mesh position ", mesh._absolutePosition)
+		});
+		let toRender = async function () {
 			scene.render();
-			hero?.move();
+			await new_girl?.move();
 		};
 		engine.runRenderLoop(toRender);
 	}
 
 	let createScene = async function (Game) {
-		let scene = new BABYLON.Scene(engine);
+		
 		scene.collisionsEnabled = true;
 		// camera = await CreateArcRotateCamera(scene)
 		// camera = await CreateFollowCamera(scene)
 
-		let light = await createLights(scene);
+		let light =  createLights(scene);
+		let girl =  createGirl(scene, Game);
+		let collider =  CreateGround(scene);
+		let land1 =  CreateLand1(scene);
+		// let land2 = awaitCreateLand2(scene);
+		let fence =  CreateFence(scene);
+		let tree =  CreateTree(scene);
 
-		let collider = await CreateGround(scene);
-		let land1 = await CreateLand1(scene);
-		// let land2 = await CreateLand2(scene);
-		let fence = await CreateFence(scene);
+		let new_light = await light; 
+		let new_girl = await girl;
+		let new_collider = await collider;  
+		let new_land1 = await land1;  
+		let new_fence = await fence ; 
+		let new_tree = await tree ; 
 
-		let tree = await CreateTree(scene);
+		let followCamera = createFollowCameralock(scene, new_girl);
+		let new_followCamera = await followCamera  
 
-		let girl = await createGirl(scene, Game);
-		let followCamera = createFollowCameralock(scene, girl);
-		return scene;
+		return  new_girl;
 	};
 
 	function createRoomGUI(scene) {
@@ -184,8 +201,8 @@ const ReactCanvas = (props) => {
 			});
 	}
 
-	function createFollowCameralock(scene, target) {
-		let camera = new BABYLON.FollowCamera("tankFollowCamera", target.position, scene, target);
+	async function createFollowCameralock(scene, target) {
+		let camera = await new BABYLON.FollowCamera("tankFollowCamera", target.position, scene, target);
 		camera.radius = 20; // how far from the object to follow
 		camera.heightOffset = 4; // how high above the object to place the camera
 		camera.rotationOffset = 180; // the viewing anglewww
@@ -237,10 +254,12 @@ const ReactCanvas = (props) => {
 	async function CreateFence(scene) {
 		const fence = new BABYLON.SceneLoader.ImportMesh("", "/assets/", "Fence.obj", scene, (meshes) => {
 			meshes.forEach((i) => {
+			
 				i.position.y = -1;
 				i.checkCollisions = true;
 				i.scaling.scaleInPlace(0.01);
 				i.position.z = -10;
+				console.log("fence ", i._absolutePosition)
 			});
 		});
 		return fence;
@@ -271,12 +290,12 @@ const ReactCanvas = (props) => {
 		return tree;
 	}
 	async function createLights(scene) {
-		let light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+		let light = await new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 		light.intensity = 0.7;
 	}
 
 	async function CreateArcRotateCamera(scene) {
-		let camera = new BABYLON.ArcRotateCamera("camera1", 10, Math.PI / 4, 10, new BABYLON.Vector3(10, 0, 10), scene);
+		let camera = await new BABYLON.ArcRotateCamera("camera1", 10, Math.PI / 4, 10, new BABYLON.Vector3(10, 0, 10), scene);
 		scene.activeCamera = camera;
 		scene.activeCamera.attachControl(canvas, true);
 		// camera.lowerRadiusLimit = 2;
@@ -299,7 +318,7 @@ const ReactCanvas = (props) => {
 
 	async function createGirl(scene, Game, data) {
 		let inputMap = {};
-		scene.actionManager = new BABYLON.ActionManager(scene);
+		scene.actionManager = await new BABYLON.ActionManager(scene);
 		scene.actionManager.registerAction(
 			new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
 				inputMap[evt.sourceEvent.key] = evt.sourceEvent.type === "keydown";
@@ -387,7 +406,7 @@ const ReactCanvas = (props) => {
 			socket.emit("IWasCreated", GameData, hero.state);
 		}
 
-		hero.move = function () {
+		hero.move =async function () {
 			let heroSpeed = 0.1;
 			let heroSpeedBackwards = 0.05;
 			let heroRotationSpeed = 0.1;
@@ -401,7 +420,7 @@ const ReactCanvas = (props) => {
 			}
 
 			if (isWPressed) {
-				walkAnim.start(true, 1.0, walkAnim.from, walkAnim.to, false);
+				walkAnim?.start(true, 1.0, walkAnim.from, walkAnim.to, false);
 				const vec = hero.forward.scale(heroSpeed).add(gravity);
 				hero.moveWithCollisions(vec);
 				notifyServer = true;
@@ -410,7 +429,7 @@ const ReactCanvas = (props) => {
 			if (isSPressed) {
 				const vec = hero.forward.scale(-heroSpeedBackwards).add(gravity);
 				hero.moveWithCollisions(vec);
-				walkBackAnim.start(true, 1.0, walkBackAnim.from, walkBackAnim.to, false);
+				walkBackAnim?.start(true, 1.0, walkBackAnim.from, walkBackAnim.to, false);
 				notifyServer = true;
 				hero.state.notifyServer = true;
 			}
@@ -427,7 +446,7 @@ const ReactCanvas = (props) => {
 				notifyServer = true;
 			}
 			if (isBPressed) {
-				sambaAnim.start(true, 1.0, sambaAnim.from, sambaAnim.to, false);
+				sambaAnim?.start(true, 1.0, sambaAnim.from, sambaAnim.to, false);
 				notifyServer = true;
 				hero.state.notifyServer = true;
 			}
@@ -447,13 +466,14 @@ const ReactCanvas = (props) => {
 				hero.state.isDPressed = false;
 				hero.state.isWPressed = false;
 				hero.state.isBPressed = false;
-				idleAnim.start(true, 1.0, idleAnim.from, idleAnim.to, false);
+				idleAnim?.start(true, 1.0, idleAnim.from, idleAnim.to, false);
 				//Stop all animations besides Idle Anim when no key is down
-				sambaAnim.stop();
-				walkAnim.stop();
-				walkBackAnim.stop();
+				sambaAnim?.stop();
+				walkAnim?.stop();
+				walkBackAnim?.stop();
 				hero.state.notifyServer = false;
 			}
+			// console.log("aaaaaaaaaaaa", hero._absolutePosition);
 			socket.emit("IMoved", Game, hero.state);
 		};
 
@@ -476,8 +496,8 @@ const ReactCanvas = (props) => {
 
 		// 	var ray = new BABYLON.Ray(origin, direction, length);
 
-		// 	// let rayHelper = new BABYLON.RayHelper(ray);
-		// 	// rayHelper.show(scene);
+		// 	let rayHelper = new BABYLON.RayHelper(ray);
+		// 	rayHelper.show(scene);
 
 		// 	var hit = scene.pickWithRay(ray);
 
@@ -490,6 +510,7 @@ const ReactCanvas = (props) => {
 		// 		//  array.find(element => {console.log("2222222222222",element)});
 		// 		if(!array.includes(mesh.id)){
 		// 			// mesh.setEnabled( false);
+		// 			console.log("2222222222222",mesh.id)
 		// 			mesh.setEnabled((mesh.isEnabled() ? false : true));
 		// 		}
 
@@ -504,7 +525,7 @@ const ReactCanvas = (props) => {
 	}
 
 	window.addEventListener("resize", function () {
-		engine.resize();
+		engine?.resize();
 	});
 
 	function modifySettings() {
