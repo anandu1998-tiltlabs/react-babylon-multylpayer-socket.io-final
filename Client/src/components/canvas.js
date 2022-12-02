@@ -9,10 +9,7 @@ const { REACT_APP_SERVER_DOMAIN } = process.env;
 
 window.CANNON = cannon;
 
-const myStyle = {
-	width: "95%",
-	height: "95%",
-};
+
 
 const ReactCanvas = (props) => {
 	let canvasRef = useRef(null);
@@ -194,15 +191,15 @@ const ReactCanvas = (props) => {
 		let collider = CreateGround(scene);
 		let land1 = CreateLand1(scene);
 		// let land2 = awaitCreateLand2(scene);
-		// let fence =  CreateFence(scene);
-		// let tree =  CreateTree(scene);
+		let fence =  CreateFence(scene);
+		let tree =  CreateTree(scene);
 
 		let new_light = await light;
 		let new_girl = await girl;
 		let new_collider = await collider;
 		let new_land1 = await land1;
-		// let new_fence = await fence ;
-		// let new_tree = await tree ;
+		let new_fence = await fence ;
+		let new_tree = await tree ;
 
 		let followCamera = createFollowCameralock(scene, new_girl);
 		let new_followCamera = await followCamera;
@@ -597,16 +594,16 @@ const ReactCanvas = (props) => {
 	}
 
 	const loadAssets = async () => {
-		let distance = 15;
-		let refresh_distance = 2;
-		if (
-			girl?._absolutePosition.x - new_count.x > refresh_distance ||
-			girl?._absolutePosition.x - new_count.x < -refresh_distance ||
-			girl?._absolutePosition.z - new_count.z > refresh_distance ||
-			girl?._absolutePosition.z - new_count.z < -refresh_distance
-		) {
-			new_count.x = girl?._absolutePosition.x;
-			new_count.z = girl?._absolutePosition.z;
+		let distance = 20;
+		// let refresh_distance = 2;
+		// if (
+		// 	girl?._absolutePosition.x - new_count.x > refresh_distance ||
+		// 	girl?._absolutePosition.x - new_count.x < -refresh_distance ||
+		// 	girl?._absolutePosition.z - new_count.z > refresh_distance ||
+		// 	girl?._absolutePosition.z - new_count.z < -refresh_distance
+		// ) {
+		// 	new_count.x = girl?._absolutePosition.x;
+		// 	new_count.z = girl?._absolutePosition.z;
 
 			let array = [
 				"ground",
@@ -633,14 +630,14 @@ const ReactCanvas = (props) => {
 			// 		"HVGirl_primitive6","HVGirl_primitive7","HVGirl_primitive8","HVGirl_primitive9",
 			// 		"HVGirl_primitive10","my_flore","plane","Mesh_galho","Mesh_Folhagem_0","Mesh_galho fino_0"
 
-			if (girl?._absolutePosition.z - -10 < distance) {
-				let fence = CreateFence(scene);
-				let new_fence = await fence;
-			}
-			if (girl?._absolutePosition.x - 5 < distance) {
-				let tree = CreateTree(scene);
-				let new_tree = await tree;
-			}
+			// if (girl?._absolutePosition.z - -10 < distance) {
+			// 	let fence = CreateFence(scene);
+			// 	let new_fence = await fence;
+			// }
+			// if (girl?._absolutePosition.x - 5 < distance) {
+			// 	let tree = CreateTree(scene);
+			// 	let new_tree = await tree;
+			// }
 
 			scene?.meshes?.forEach((mesh) => {
 				if (!array.includes(mesh.id)) {
@@ -650,11 +647,14 @@ const ReactCanvas = (props) => {
 						girl?._absolutePosition.z - mesh?._absolutePosition.z > distance ||
 						girl?._absolutePosition.z - mesh?._absolutePosition.z < -distance
 					) {
-						mesh?.dispose();
+						// mesh?.dispose();
+						mesh.setEnabled(false) 
+					}else{
+						mesh.setEnabled(true) 
 					}
 				}
 			});
-		}
+		// }
 	};
 
 	document.addEventListener("keydown", async function (event) {
@@ -703,6 +703,6 @@ const ReactCanvas = (props) => {
 		connectToServer();
 	}, []);
 
-	return <canvas style={myStyle} ref={canvasRef} {...props}></canvas>;
+	return <canvas ref={canvasRef} {...props}></canvas>;
 };
 export default ReactCanvas;
