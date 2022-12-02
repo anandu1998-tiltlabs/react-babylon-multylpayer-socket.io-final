@@ -4,6 +4,7 @@ import "babylonjs-loaders";
 import * as GUI from "babylonjs-gui";
 import * as cannon from "cannon";
 import socketIO from "socket.io-client";
+import AgoraRTC from "agora-rtc-sdk-ng";
 const { REACT_APP_SERVER_DOMAIN } = process.env;
 
 window.CANNON = cannon;
@@ -18,7 +19,8 @@ const ReactCanvas = (props) => {
 	let canvas;
 	let engine;
 	let scene;
-	let camera;
+	let girl;
+	let new_count = { x: 0, y: 0, z: 0 };
 
 	let isWPressed = false;
 	let isSPressed = false;
@@ -34,8 +36,6 @@ const ReactCanvas = (props) => {
 	const locRoom = localStorage.getItem("room");
 	const locName = localStorage.getItem("name");
 
-	// let data = {name:locRoom};
-	// localStorage.clear();
 	let GameData = {};
 	let enemies = {};
 
@@ -63,7 +63,6 @@ const ReactCanvas = (props) => {
 			});
 
 			socket.on("AnotherTankMoved", function (data) {
-				// console.log("aaaaaaaaaaaa",data);
 				let girl = enemies[data.id];
 				let hero = girl?.meshes[0];
 				hero?.setState(data);
@@ -94,11 +93,6 @@ const ReactCanvas = (props) => {
 				}
 			});
 
-			// window.onbeforeunload = function () {
-			//   socket.emit("IGoAway",locRoom, Game.id);
-			//   socket.disconnect();
-			// };
-
 			socket.on("AnotherWentAway", function (data) {
 				let hero = enemies[data.id].meshes[0];
 				hero.dispose();
@@ -107,54 +101,113 @@ const ReactCanvas = (props) => {
 		});
 	}
 
+	let options = {
+		// Pass your App ID here.
+		appId: "a93ab8fcde6049e497af9d0911758c5b",
+		// Set the channel name.
+		channel: "vvv",
+		// Pass your temp token here.
+		token: "007eJxTYNhtvGvzw2oXEd+Hd95YZoU9VipMn9Zemal5oUeh+EmrqbQCQ6KlcWKSRVpySqqZgYllqomleWKaZYqBpaGhualFsmnSf4+O5IZARgbGi6qsQBIMQXxmhrKyMgYGAFBlHyo=",
+		// Set the user ID.
+		uid: 0,
+	};
+	let channelParameters = {
+		// A variable to hold a local audio track.
+		localAudioTrack: null,
+		// A variable to hold a remote audio track.
+		remoteAudioTrack: null,
+		// A variable to hold the remote user id.
+		remoteUid: null,
+	};
+	async function startBasicCall() {
+		// Create an instance of the Agora Engine
+		const agoraEngine = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+		// Listen for the "user-published" event to retrieve an AgoraRTCRemoteUser object.
+		agoraEngine.on("user-published", async (user, mediaType) => {
+			// Subscribe to the remote user when the SDK triggers the "user-published" event.
+			await agoraEngine.subscribe(user, mediaType);
+			console.log("subscribe success");
+			// Subscribe and play the remote audio track.
+			if (mediaType == "audio") {
+				channelParameters.remoteUid = user.uid;
+				// Get the RemoteAudioTrack object from the AgoraRTCRemoteUser object.
+				channelParameters.remoteAudioTrack = user.audioTrack;
+				// Play the remote audio track.
+				channelParameters.remoteAudioTrack.play();
+				showMessage("Remote user connected: " + user.uid);
+			}
+			// Listen for the "user-unpublished" event.
+			agoraEngine.on("user-unpublished", (user) => {
+				console.log(user.uid + "has left the channel");
+				showMessage("Remote user has left the channel");
+			});
+		});
+		const onLoad = async () => {
+			// Listen to the Join button click event.
+			// Join a channel.
+			await agoraEngine.join(options.appId, options.channel, options.token, options.uid);
+			showMessage("Joined channel: " + options.channel);
+			// Create a local audio track from the microphone audio.
+			channelParameters.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+			// Publish the local audio track in the channel.
+			await agoraEngine.publish(channelParameters.localAudioTrack);
+			console.log("Publish success!");
+			// Listen to the Leave button click event.
+			// document.getElementById('leave').onclick = async function ()
+			// {
+			//   // Destroy the local audio track.
+			//   channelParameters.localAudioTrack.close();
+			//   // Leave the channel
+			//   await agoraEngine.leave();
+			//   console.log("You left the channel");
+			//   // Refresh the page for reuse
+			//   window.location.reload();
+			// }
+		};
+		onLoad();
+	}
+	function showMessage(text) {
+		//   document.getElementById("message").textContent = text;
+		console.log(" text----->", text);
+	}
+
 	async function startGame(Game) {
 		canvas = canvasRef.current;
 		engine = new BABYLON.Engine(canvas, true);
 		scene = new BABYLON.Scene(engine);
-		let girl =  createScene(Game);
-		let new_girl = await girl
-		// modifySettings();
-		let hero = scene.getMeshByName("__root__");
-		console.log("girl[0]", girl);
-		console.log("hero ", hero)
-		console.log("hero position ", hero._absolutePosition)
-		console.log("meshs", scene.meshes, scene.meshes.length)
-		scene.meshes.forEach(mesh => {
-			console.log("mesh name", mesh)
-			// console.log("mesh position ", mesh._absolutePosition)
-		});
+		let new_girl = createScene(Game);
+		girl = await new_girl;
 		let toRender = async function () {
 			scene.render();
-			await new_girl?.move();
+			await girl?.move();
 		};
 		engine.runRenderLoop(toRender);
 	}
 
 	let createScene = async function (Game) {
-		
 		scene.collisionsEnabled = true;
 		// camera = await CreateArcRotateCamera(scene)
 		// camera = await CreateFollowCamera(scene)
 
-		let light =  createLights(scene);
-		let girl =  createGirl(scene, Game);
-		let collider =  CreateGround(scene);
-		let land1 =  CreateLand1(scene);
+		let light = createLights(scene);
+		let girl = createGirl(scene, Game);
+		let collider = CreateGround(scene);
+		let land1 = CreateLand1(scene);
 		// let land2 = awaitCreateLand2(scene);
-		let fence =  CreateFence(scene);
-		let tree =  CreateTree(scene);
+		// let fence =  CreateFence(scene);
+		// let tree =  CreateTree(scene);
 
-		let new_light = await light; 
+		let new_light = await light;
 		let new_girl = await girl;
-		let new_collider = await collider;  
-		let new_land1 = await land1;  
-		let new_fence = await fence ; 
-		let new_tree = await tree ; 
+		let new_collider = await collider;
+		let new_land1 = await land1;
+		// let new_fence = await fence ;
+		// let new_tree = await tree ;
 
 		let followCamera = createFollowCameralock(scene, new_girl);
-		let new_followCamera = await followCamera  
+		let new_followCamera = await followCamera;
 
-		return  new_girl;
+		return new_girl;
 	};
 
 	function createRoomGUI(scene) {
@@ -254,29 +307,17 @@ const ReactCanvas = (props) => {
 	async function CreateFence(scene) {
 		const fence = new BABYLON.SceneLoader.ImportMesh("", "/assets/", "Fence.obj", scene, (meshes) => {
 			meshes.forEach((i) => {
-			
 				i.position.y = -1;
 				i.checkCollisions = true;
 				i.scaling.scaleInPlace(0.01);
 				i.position.z = -10;
-				console.log("fence ", i._absolutePosition)
+				// console.log("fence ", i._absolutePosition)
 			});
 		});
 		return fence;
 	}
 
 	async function CreateTree(scene) {
-		// const tree = new BABYLON.SceneLoader.ImportMesh("", "/assets/", "urban_tree.glb", scene, (meshes) => {
-		// 	console.log("ssssssssssssssssss", meshes);
-		// 	meshes.forEach((i) => {
-		// 		i.position.y = -1.5;
-		// 		i.position.x = -4;
-		// 		i.checkCollisions = true;
-		// 		// i.scaling.scaleInPlace(0.06);
-		// 		// i.position.z = -10;
-		// 	});
-		// });
-		// return tree;
 
 		const tree = await BABYLON.SceneLoader.ImportMesh("", "/assets/", "urban_tree.glb", scene, (meshes) => {
 			// meshes[0].position.x = -150;
@@ -406,7 +447,7 @@ const ReactCanvas = (props) => {
 			socket.emit("IWasCreated", GameData, hero.state);
 		}
 
-		hero.move =async function () {
+		hero.move = async function () {
 			let heroSpeed = 0.1;
 			let heroSpeedBackwards = 0.05;
 			let heroRotationSpeed = 0.1;
@@ -555,7 +596,70 @@ const ReactCanvas = (props) => {
 		}
 	}
 
-	document.addEventListener("keydown", function (event) {
+	const loadAssets = async () => {
+		let distance = 15;
+		let refresh_distance = 2;
+		if (
+			girl?._absolutePosition.x - new_count.x > refresh_distance ||
+			girl?._absolutePosition.x - new_count.x < -refresh_distance ||
+			girl?._absolutePosition.z - new_count.z > refresh_distance ||
+			girl?._absolutePosition.z - new_count.z < -refresh_distance
+		) {
+			new_count.x = girl?._absolutePosition.x;
+			new_count.z = girl?._absolutePosition.z;
+
+			let array = [
+				"ground",
+				"HVGirl_primitive0",
+				"HVGirl_primitive1",
+				"HVGirl_primitive2",
+				"HVGirl_primitive3",
+				"HVGirl_primitive4",
+				"HVGirl_primitive5",
+				"HVGirl_primitive6",
+				"HVGirl_primitive7",
+				"HVGirl_primitive8",
+				"HVGirl_primitive9",
+				"HVGirl_primitive10",
+				"my_flore",
+				"__root__",
+				"HVGirl_primitive0",
+				"plane",
+				"Mesh_galho",
+			];
+
+			// 		let array = ["ground","1","2","3","4","__root__","HVGirl_primitive0","HVGirl_primitive1",
+			// 		"HVGirl_primitive2","HVGirl_primitive3","HVGirl_primitive4","HVGirl_primitive5",
+			// 		"HVGirl_primitive6","HVGirl_primitive7","HVGirl_primitive8","HVGirl_primitive9",
+			// 		"HVGirl_primitive10","my_flore","plane","Mesh_galho","Mesh_Folhagem_0","Mesh_galho fino_0"
+
+			if (girl?._absolutePosition.z - -10 < distance) {
+				let fence = CreateFence(scene);
+				let new_fence = await fence;
+			}
+			if (girl?._absolutePosition.x - 5 < distance) {
+				let tree = CreateTree(scene);
+				let new_tree = await tree;
+			}
+
+			scene?.meshes?.forEach((mesh) => {
+				if (!array.includes(mesh.id)) {
+					if (
+						girl?._absolutePosition.x - mesh?._absolutePosition.x > distance ||
+						girl?._absolutePosition.x - mesh?._absolutePosition.x < -distance ||
+						girl?._absolutePosition.z - mesh?._absolutePosition.z > distance ||
+						girl?._absolutePosition.z - mesh?._absolutePosition.z < -distance
+					) {
+						mesh?.dispose();
+					}
+				}
+			});
+		}
+	};
+
+	document.addEventListener("keydown", async function (event) {
+		await loadAssets();
+
 		if (event.key === "w" || event.key === "W") {
 			isWPressed = true;
 		}
@@ -594,6 +698,7 @@ const ReactCanvas = (props) => {
 	const [count, setCount] = useState(0);
 
 	useEffect(() => {
+		// startBasicCall()
 		console.log("inside useeffect");
 		connectToServer();
 	}, []);
